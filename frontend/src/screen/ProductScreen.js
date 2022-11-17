@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useReducer } from "react";
+import { useContext, useEffect, useReducer } from "react";
 import { useParams } from "react-router-dom";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -8,7 +8,10 @@ import Rating from "../component/Rating";
 import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
-import { Helmet, HelmetProvider } from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
+import LodingBox from "../component/LodingBox";
+import MessageBox from "../component/MessageBox";
+import { Store } from "../Store";
 const reducer = (state, action) => {
   switch (action.type) {
     case "FETCH_REQUEST":
@@ -21,6 +24,7 @@ const reducer = (state, action) => {
       return state;
   }
 };
+
 function ProductScreen() {
   const params = useParams();
   const { slug } = params;
@@ -44,10 +48,17 @@ function ProductScreen() {
     fetchData();
   }, [slug]);
 
+  const { state, dispatch: ctxDispatch } = useContext(Store);
+  const addToCartHandler = () => {
+    ctxDispatch({
+      type: "CART_ADD_ITEM",
+      payload: { ...product, quntStock: 1 },
+    });
+  };
   return loading ? (
-    <div> Loading ... </div>
+    <LodingBox />
   ) : error ? (
-    <div> {error} </div>
+    <MessageBox variant="danger">{error}</MessageBox>
   ) : (
     <div>
       <Row>
@@ -98,7 +109,9 @@ function ProductScreen() {
                 {product.quntStock > 0 && (
                   <ListGroup.Item>
                     <dic className="d-grid">
-                      <Button variant="primary">Add to Cart</Button>
+                      <Button onClick={addToCartHandler} variant="primary">
+                        Add to Cart
+                      </Button>
                     </dic>
                   </ListGroup.Item>
                 )}
